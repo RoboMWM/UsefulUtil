@@ -5,6 +5,10 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Created on 3/1/2017.
  *
@@ -36,12 +40,14 @@ public class UsefulCompatEvent extends Event implements Cancellable
     private Throwable rock;
     private String identifier;
     private JavaPlugin callingPlugin;
+    private List<Object> objects = new ArrayList<>();
 
-    UsefulCompatEvent(Throwable rock, String id, JavaPlugin plugin)
+    UsefulCompatEvent(Throwable rock, String id, JavaPlugin plugin, Object... objects)
     {
         this.rock = rock;
         this.identifier = id;
         this.callingPlugin = plugin;
+        Collections.addAll(this.objects, objects);
     }
 
     public Throwable getRock()
@@ -57,5 +63,10 @@ public class UsefulCompatEvent extends Event implements Cancellable
     public JavaPlugin getCallingPlugin()
     {
         return callingPlugin;
+    }
+
+    public List<Object> objects()
+    {
+        return objects;
     }
 }

@@ -1,7 +1,6 @@
 package me.robomwm.usefulutil.compat;
 
 import org.bukkit.Bukkit;
-import org.bukkit.event.Cancellable;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -59,12 +58,12 @@ public class UsefulCompat
      * @param plugin
      * @return whether the event was handled (canceled)
      */
-    public static boolean compatCall(Throwable rock, String id, JavaPlugin plugin)
+    public static boolean compatCall(Throwable rock, String id, JavaPlugin plugin, Object... objects)
     {
         //return false if we're on the current version
         if (isCurrentOrNewer())
             return false;
-        UsefulCompatEvent event = new UsefulCompatEvent(rock, id, plugin);
+        UsefulCompatEvent event = new UsefulCompatEvent(rock, id, plugin, objects);
         plugin.getServer().getPluginManager().callEvent(event);
         return event.isCancelled();
     }
