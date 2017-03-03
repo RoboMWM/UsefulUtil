@@ -31,7 +31,7 @@ public class UsefulCompat
         }
         catch (Exception e)
         {
-            Bukkit.getLogger().warning("[DeathSpectating] Was not able to determine bukkit version.");
+            Bukkit.getLogger().warning("[UsefulUtil] Was not able to determine bukkit version.");
             return -1;
         }
         serverVersion = versionNumber;
@@ -46,12 +46,15 @@ public class UsefulCompat
     /**
      * Calls a "UsefulCompatEvent" so listeners can decide if they can provide some form of compatibility
      *
-     * General usage:
+     * Two general use cases:
      *
      * catch (whatever e)
      * {
      *     if (!compatCall(e, "mymethodname", myplugin) throw e;
      * }
+     *
+     * or at the beginning of your method:
+     * if (compatCall(null, "myMethodName", myPlugin) return;
      *
      * @param rock
      * @param id
