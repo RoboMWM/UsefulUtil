@@ -41,7 +41,7 @@ public final class UsefulUtil
      * @param entity
      * @return
      */
-    private static boolean isMonsterWithTracking(Entity entity)
+    public static boolean isMonsterWithTracking(Entity entity)
     {
         if (!(entity instanceof Creature)) return false;
         if (entity instanceof Monster) return true;
@@ -66,7 +66,7 @@ public final class UsefulUtil
      * @param entity
      * @return
      */
-    private static boolean isMonster(Entity entity)
+    public static boolean isMonster(Entity entity)
     {
         if (entity instanceof Monster) return true;
 
