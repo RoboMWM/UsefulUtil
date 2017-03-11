@@ -4,9 +4,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Explosive;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Rabbit;
+import org.bukkit.entity.TNTPrimed;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 
 import java.util.UUID;
 
@@ -85,5 +91,57 @@ public final class UsefulUtil
             default:
                 return false;
         }
+    }
+
+    /**
+     * Gets the entity that dealt the final blow
+     * @param event
+     * @return
+     */
+    public static Entity getKiller(EntityDeathEvent event)
+    {
+        return getKiller(event, false);
+    }
+
+    /**
+     * Gets the entity that dealt the final blow
+     * @param event
+     * @param deleteProjectile whether to delete the projectile that dealt the final blow
+     * @return
+     */
+    public static Entity getKiller(EntityDeathEvent event, boolean deleteProjectile)
+    {
+        LivingEntity entity = event.getEntity();
+        Entity killer = event.getEntity().getKiller();
+
+        if (killer != null)
+            return killer;
+
+        //Killed by non-player entity
+        if (entity.getLastDamageCause() instanceof EntityDamageByEntityEvent)
+        {
+            killer = ((EntityDamageByEntityEvent)entity.getLastDamageCause()).getDamager();
+
+            //Killed by projectile
+            if (killer != null && killer instanceof Projectile)
+            {
+                Projectile arrow = (Projectile)killer;
+                if (arrow.getShooter() instanceof LivingEntity)
+                    killer = (Entity) arrow.getShooter();
+                if (deleteProjectile)
+                    arrow.remove();
+            }
+
+            //Killed by TNT explosion
+            else if (killer != null && killer instanceof TNTPrimed)
+            {
+                TNTPrimed tnt = (TNTPrimed)killer;
+                killer = tnt.getSource();
+            }
+        }
+
+        //TODO: track kills due to fire and other related environmental damage(?)
+
+        return killer;
     }
 }
