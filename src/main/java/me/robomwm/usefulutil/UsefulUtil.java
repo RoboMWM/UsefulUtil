@@ -12,6 +12,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 
 import java.util.UUID;
@@ -119,29 +120,40 @@ public final class UsefulUtil
 
         //Killed by non-player entity
         if (entity.getLastDamageCause() instanceof EntityDamageByEntityEvent)
-        {
-            killer = ((EntityDamageByEntityEvent)entity.getLastDamageCause()).getDamager();
-
-            //Killed by projectile
-            if (killer != null && killer instanceof Projectile)
-            {
-                Projectile arrow = (Projectile)killer;
-                if (arrow.getShooter() instanceof LivingEntity)
-                    killer = (Entity) arrow.getShooter();
-                if (deleteProjectile)
-                    arrow.remove();
-            }
-
-            //Killed by TNT explosion
-            else if (killer != null && killer instanceof TNTPrimed)
-            {
-                TNTPrimed tnt = (TNTPrimed)killer;
-                killer = tnt.getSource();
-            }
-        }
+            killer = getSourceAttacker((EntityDamageByEntityEvent)entity.getLastDamageCause(), deleteProjectile);
 
         //TODO: track kills due to fire and other related environmental damage(?)
 
         return killer;
+    }
+
+    /**
+     * Returns the source entity responsible for this damage (e.g. the skeleton that fired the arrow)
+     * @param event
+     * @param deleteProjectile whether to delete the projectile that caused the damage (if applicable)
+     * @return
+     */
+    public static Entity getSourceAttacker(EntityDamageByEntityEvent event, boolean deleteProjectile)
+    {
+        Entity damager = event.getDamager();
+
+        //damaged by projectile
+        if (damager instanceof Projectile)
+        {
+            Projectile arrow = (Projectile)damager;
+            if (arrow.getShooter() instanceof LivingEntity)
+                damager = (Entity) arrow.getShooter();
+            if (deleteProjectile)
+                arrow.remove();
+        }
+
+        //damaged by TNT explosion
+        else if (damager instanceof TNTPrimed)
+        {
+            TNTPrimed tnt = (TNTPrimed)damager;
+            damager = tnt.getSource();
+        }
+
+        return damager;
     }
 }
