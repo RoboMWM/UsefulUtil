@@ -1,4 +1,6 @@
-Add the shading plugin to the build. Replace **`YOUR.OWN.PACKAGE`** with your own package.
+1. Add as dependency: https://jitpack.io/#RoboMWM/UsefulUtil
+
+2. Add the shading plugin to the build. Replace **`YOUR.OWN.PACKAGE`** with your own package.
     
    ```xml
         <build>
@@ -12,7 +14,7 @@ Add the shading plugin to the build. Replace **`YOUR.OWN.PACKAGE`** with your ow
                     <configuration>
                         <artifactSet>
                             <includes>
-                                <include>me.robomwm:usefulutil</include>
+                                <include>com.github.RoboMWM:UsefulUtil</include>
                             </includes>
                         </artifactSet>
                         <relocations>
