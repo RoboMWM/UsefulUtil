@@ -120,39 +120,46 @@ public final class UsefulUtil
 
         //Killed by non-player entity
         if (entity.getLastDamageCause() instanceof EntityDamageByEntityEvent)
-            killer = getSourceAttacker((EntityDamageByEntityEvent)entity.getLastDamageCause(), deleteProjectile);
-
-        //TODO: track kills due to fire and other related environmental damage(?)
+            killer = getSourceAttacker(entity.getLastDamageCause(), deleteProjectile);
 
         return killer;
     }
 
     /**
      * Returns the source entity responsible for this damage (e.g. the skeleton that fired the arrow)
-     * @param event
+     * @param damageEvent
      * @param deleteProjectile whether to delete the projectile that caused the damage (if applicable)
      * @return
      */
-    public static Entity getSourceAttacker(EntityDamageByEntityEvent event, boolean deleteProjectile)
+    public static Entity getSourceAttacker(EntityDamageEvent damageEvent, boolean deleteProjectile)
     {
-        Entity damager = event.getDamager();
+        Entity damager = null;
 
-        //damaged by projectile
-        if (damager instanceof Projectile)
+        if (damageEvent instanceof EntityDamageByEntityEvent)
         {
-            Projectile arrow = (Projectile)damager;
-            if (arrow.getShooter() instanceof LivingEntity)
-                damager = (Entity) arrow.getShooter();
-            if (deleteProjectile)
-                arrow.remove();
+            EntityDamageByEntityEvent event = (EntityDamageByEntityEvent)damageEvent;
+
+            damager = event.getDamager();
+
+            //damaged by projectile
+            if (damager instanceof Projectile)
+            {
+                Projectile arrow = (Projectile)damager;
+                if (arrow.getShooter() instanceof LivingEntity)
+                    damager = (Entity) arrow.getShooter();
+                if (deleteProjectile)
+                    arrow.remove();
+            }
+
+            //damaged by TNT explosion
+            else if (damager instanceof TNTPrimed)
+            {
+                TNTPrimed tnt = (TNTPrimed)damager;
+                damager = tnt.getSource();
+            }
         }
 
-        //damaged by TNT explosion
-        else if (damager instanceof TNTPrimed)
-        {
-            TNTPrimed tnt = (TNTPrimed)damager;
-            damager = tnt.getSource();
-        }
+        //TODO: track kills due to fire and other related environmental damage(?)
 
         return damager;
     }
