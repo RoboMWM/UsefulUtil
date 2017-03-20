@@ -173,7 +173,7 @@ public final class UsefulUtil
      * @param source
      * @return
      */
-    public TNTPrimed spawnSourcedTNTPrimed(Location location, LivingEntity source)
+    public static TNTPrimed spawnSourcedTNTPrimed(Location location, LivingEntity source)
     {
         //CraftServer craftServer = ((CraftServer)Bukkit.getServer());
         //CraftWorld craftWorld = (CraftWorld)location.getWorld();
