@@ -1,6 +1,7 @@
 package me.robomwm.usefulutil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -156,11 +157,31 @@ public final class UsefulUtil
             {
                 TNTPrimed tnt = (TNTPrimed)damager;
                 damager = tnt.getSource();
+                if (damager == null && tnt.hasMetadata("SOURCE"))
+                    damager = (Player)tnt.getMetadata("SOURCE").get(0).value();
             }
         }
 
         //TODO: track kills due to fire and other related environmental damage(?)
 
         return damager;
+    }
+
+    /**
+     * @implNote Uses NMS - thus is version dependent!
+     * @param location
+     * @param source
+     * @return
+     */
+    public TNTPrimed spawnSourcedTNTPrimed(Location location, LivingEntity source)
+    {
+        //CraftServer craftServer = ((CraftServer)Bukkit.getServer());
+        //CraftWorld craftWorld = (CraftWorld)location.getWorld();
+        //World nmsWorld = craftWorld.getHandle();
+        //EntityLiving nmsSource = ((CraftLivingEntity)source).getHandle();
+        //EntityTNTPrimed newTNT = new EntityTNTPrimed(nmsWorld, location.getX(), location.getY(), location.getZ(), nmsSource);
+        UsefulTNTPrimed extendedTNT = location.getWorld().spawn(location, UsefulTNTPrimed.class);
+        extendedTNT.setSource(source);
+        return extendedTNT;
     }
 }
