@@ -182,7 +182,7 @@ public final class UsefulUtil
         //EntityTNTPrimed newTNT = new EntityTNTPrimed(nmsWorld, location.getX(), location.getY(), location.getZ(), nmsSource);
         UsefulTNTPrimed extendedTNT = location.getWorld().spawn(location, UsefulTNTPrimed.class);
         extendedTNT.setSource(source);
-        Bukkit.broadcastMessage(String.valueOf(extendedTNT.hashCode()));
+        System.out.println(extendedTNT.hashCode());
         return extendedTNT;
     }
 }
