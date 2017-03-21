@@ -1,24 +1,15 @@
 package me.robomwm.usefulutil;
 
-import net.minecraft.server.v1_11_R1.EntityLiving;
-import net.minecraft.server.v1_11_R1.EntityTNTPrimed;
-import net.minecraft.server.v1_11_R1.World;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_11_R1.CraftServer;
-import org.bukkit.craftbukkit.v1_11_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_11_R1.entity.CraftLivingEntity;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Explosive;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.TNTPrimed;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -164,32 +155,11 @@ public final class UsefulUtil
             {
                 TNTPrimed tnt = (TNTPrimed)damager;
                 damager = tnt.getSource();
-                if (damager == null && tnt.hasMetadata("SOURCE"))
-                    damager = (Player)tnt.getMetadata("SOURCE").get(0).value();
             }
         }
 
         //TODO: track kills due to fire and other related environmental damage(?)
 
         return damager;
-    }
-
-    /**
-     * @implNote Uses NMS - thus is version dependent!
-     * @param location
-     * @param source
-     * @return
-     */
-    public static TNTPrimed spawnSourcedTNTPrimed(Location location, LivingEntity source)
-    {
-        CraftServer craftServer = ((CraftServer)Bukkit.getServer());
-        CraftWorld craftWorld = (CraftWorld)location.getWorld();
-        World nmsWorld = craftWorld.getHandle();
-        EntityLiving nmsSource = ((CraftLivingEntity)source).getHandle();
-        EntityTNTPrimed newTNT = new EntityTNTPrimed(nmsWorld, location.getX(), location.getY(), location.getZ(), nmsSource);
-        UsefulTNTPrimed extendedTNT = new UsefulTNTPrimed(craftServer, newTNT);
-        extendedTNT.setSource(source);
-        nmsWorld.addEntity(extendedTNT.getHandle(), CreatureSpawnEvent.SpawnReason.CUSTOM);
-        return extendedTNT;
     }
 }
