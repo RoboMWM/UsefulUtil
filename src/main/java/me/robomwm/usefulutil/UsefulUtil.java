@@ -163,16 +163,16 @@ public final class UsefulUtil
         return damager;
     }
 
-    public String formatTime()
+    public static String formatTime()
     {
         return formatTime(getEpoch());
     }
 
-    public String formatTime(Long seconds) {
+    public static String formatTime(Long seconds) {
         return formatTime(seconds, 1);
     }
 
-    public String formatTime(Long seconds, int depth) {
+    public static String formatTime(Long seconds, int depth) {
         if (seconds == null || seconds < 5) {
             return "moments";
         }
@@ -221,7 +221,7 @@ public final class UsefulUtil
         return res;
     }
 
-    public long getEpoch() {
+    public static long getEpoch() {
         return System.currentTimeMillis() / 1000;
     }
 }
