@@ -1,6 +1,8 @@
 package me.robomwm.usefulutil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -13,7 +15,10 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -25,19 +30,41 @@ public final class UsefulUtil
 {
     private UsefulUtil(){}
 
-    public static UsefulPlayer getPlayer(String name)
+    private static YamlConfiguration inventorySnapshots;
+    private static File inventorySnapshotsFile = new File(Bukkit.getWorldContainer().getPath() + File.pathSeparator + "plugins" + File.pathSeparator + "UsefulUtilData", "inventorySnapshots.data");
+
+    private static void loadInventorySnapshots()
     {
-        Player player = Bukkit.getPlayer(name);
-        if (player == null)
-            return null;
-        return new UsefulPlayer(player);
+        if (inventorySnapshots == null)
+        {
+            if (!inventorySnapshotsFile.exists())
+            {
+                try
+                {
+                    inventorySnapshotsFile.createNewFile();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+            inventorySnapshots = YamlConfiguration.loadConfiguration(inventorySnapshotsFile);
+        }
     }
-    public static UsefulPlayer getPlayer(UUID uuid)
+
+    private static void saveInventorySnapshots()
     {
-        Player player = Bukkit.getPlayer(uuid);
-        if (player == null)
-            return null;
-        return new UsefulPlayer(player);
+        if (inventorySnapshots == null)
+            return;
+        try
+        {
+            inventorySnapshots.save(inventorySnapshotsFile);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -161,5 +188,64 @@ public final class UsefulUtil
         //TODO: track kills due to fire and other related environmental damage(?)
 
         return damager;
+    }
+
+    private static ConfigurationSection getPlayerSnapshotSection(Player player)
+    {
+        loadInventorySnapshots();
+        if (!inventorySnapshots.contains(player.getUniqueId().toString()))
+            return inventorySnapshots.createSection(player.getUniqueId().toString());
+        return inventorySnapshots.getConfigurationSection(player.getUniqueId().toString());
+    }
+
+    private static boolean deletePlayerSnapshotSection(Player player)
+    {
+        if (inventorySnapshots.contains(player.getUniqueId().toString()))
+        {
+            inventorySnapshots.set(player.getUniqueId().toString(), null);
+            saveInventorySnapshots();
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean storeAndClearInventory(Player player)
+    {
+        player.closeInventory();
+
+        ConfigurationSection snapshotSection = getPlayerSnapshotSection(player);
+        if (snapshotSection.contains("items"))
+            return false;
+
+        ItemStack[] items = player.getInventory().getContents();
+        ItemStack[] armor = player.getInventory().getArmorContents();
+
+        snapshotSection.set("items", items);
+        snapshotSection.set("armor", armor);
+
+        saveInventorySnapshots(); //TODO: schedule in a runnable instead (performance)? (Would need plugin instance)
+
+        player.getInventory().clear();
+
+        return true;
+    }
+
+    public static boolean restoreInventory(Player player)
+    {
+        player.closeInventory();
+
+        ConfigurationSection snapshotSection = getPlayerSnapshotSection(player);
+        if (!snapshotSection.contains("items"))
+            return false;
+
+        ItemStack[] items = snapshotSection.getList("items").toArray(new ItemStack[0]);
+        ItemStack[] armor = snapshotSection.getList("armor").toArray(new ItemStack[0]);
+
+        snapshotSection.set("items", items);
+        snapshotSection.set("armor", armor);
+
+        deletePlayerSnapshotSection(player);
+
+        return true;
     }
 }
