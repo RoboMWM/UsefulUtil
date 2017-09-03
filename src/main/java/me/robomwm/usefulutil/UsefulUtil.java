@@ -189,7 +189,7 @@ public final class UsefulUtil
 
         return damager;
     }
-
+    
     private static ConfigurationSection getPlayerSnapshotSection(Player player)
     {
         loadInventorySnapshots();
@@ -247,5 +247,67 @@ public final class UsefulUtil
         deletePlayerSnapshotSection(player);
 
         return true;
+    }
+
+    public static String formatTime()
+    {
+        return formatTime(getEpoch());
+    }
+
+    public static String formatTime(Long seconds) {
+        return formatTime(seconds, 1);
+    }
+
+    public static String formatTime(Long seconds, int depth) {
+        if (seconds == null || seconds < 5) {
+            return "moments";
+        }
+
+        if (seconds < 60) {
+            return seconds + " seconds";
+        }
+
+        if (seconds < 3600) {
+            Long count = (long) Math.ceil(seconds / 60);
+            String res;
+            if (count > 1) {
+                res = count + " minutes";
+            } else {
+                res = "1 minute";
+            }
+            Long remaining = seconds % 60;
+            if (depth > 0 && remaining >= 5) {
+                return res + ", " + formatTime(remaining, --depth);
+            }
+            return res;
+        }
+        if (seconds < 86400) {
+            Long count = (long) Math.ceil(seconds / 3600);
+            String res;
+            if (count > 1) {
+                res = count + " hours";
+            } else {
+                res = "1 hour";
+            }
+            if (depth > 0) {
+                return res + ", " + formatTime(seconds % 3600, --depth);
+            }
+            return res;
+        }
+        Long count = (long) Math.ceil(seconds / 86400); //Because 5 day teleport delay is needed. Jesus
+        String res;
+        if (count > 1) {
+            res = count + " days";
+        } else {
+            res = "1 day";
+        }
+        if (depth > 0) {
+            return res + ", " + formatTime(seconds % 86400, --depth);
+        }
+        return res;
+    }
+
+    public static long getEpoch() {
+        return System.currentTimeMillis() / 1000;
     }
 }
