@@ -201,14 +201,14 @@ public final class UsefulUtil
     private static ConfigurationSection getPlayerSnapshotSection(Player player)
     {
         loadInventorySnapshots();
-        if (!inventorySnapshots.contains(player.getUniqueId().toString()))
+        if (!inventorySnapshots.isSet(player.getUniqueId().toString()))
             return inventorySnapshots.createSection(player.getUniqueId().toString());
         return inventorySnapshots.getConfigurationSection(player.getUniqueId().toString());
     }
 
     private static boolean deletePlayerSnapshotSection(Player player)
     {
-        if (inventorySnapshots.contains(player.getUniqueId().toString()))
+        if (inventorySnapshots.isSet(player.getUniqueId().toString()))
         {
             inventorySnapshots.set(player.getUniqueId().toString(), null);
             saveInventorySnapshots();
@@ -222,7 +222,7 @@ public final class UsefulUtil
         player.closeInventory();
 
         ConfigurationSection snapshotSection = getPlayerSnapshotSection(player);
-        if (snapshotSection.contains("items"))
+        if (snapshotSection.isSet("items"))
             return false;
 
         snapshotSection.set("items", player.getInventory().getContents()); //ItemStack[]
@@ -244,7 +244,7 @@ public final class UsefulUtil
         player.closeInventory();
 
         ConfigurationSection snapshotSection = getPlayerSnapshotSection(player);
-        if (!snapshotSection.contains("items"))
+        if (!snapshotSection.isSet("items"))
             return false;
 
         if (player.getInventory() == null)
@@ -263,7 +263,7 @@ public final class UsefulUtil
         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(snapshotSection.getDouble("maxHealth"));
         player.setFoodLevel(snapshotSection.getInt("foodLevel"));
 
-        if (snapshotSection.contains("additionalExp"))
+        if (snapshotSection.isSet("additionalExp"))
         {
             Bukkit.getPluginManager().callEvent(new PlayerExpChangeEvent(player, snapshotSection.getInt("additionalExp")));
         }
