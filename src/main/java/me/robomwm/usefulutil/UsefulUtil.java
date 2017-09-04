@@ -201,14 +201,14 @@ public final class UsefulUtil
     private static ConfigurationSection getPlayerSnapshotSection(Player player)
     {
         loadInventorySnapshots();
-        if (!inventorySnapshots.isSet(player.getUniqueId().toString()))
+        if (inventorySnapshots.getConfigurationSection(player.getUniqueId().toString()) == null)
             return inventorySnapshots.createSection(player.getUniqueId().toString());
         return inventorySnapshots.getConfigurationSection(player.getUniqueId().toString());
     }
 
     private static boolean deletePlayerSnapshotSection(Player player)
     {
-        if (inventorySnapshots.isSet(player.getUniqueId().toString()))
+        if (inventorySnapshots.get(player.getUniqueId().toString()) != null)
         {
             inventorySnapshots.set(player.getUniqueId().toString(), null);
             saveInventorySnapshots();
@@ -222,7 +222,7 @@ public final class UsefulUtil
         player.closeInventory();
 
         ConfigurationSection snapshotSection = getPlayerSnapshotSection(player);
-        if (snapshotSection.isSet("items"))
+        if (snapshotSection.getList("items") != null)
             return false;
 
         snapshotSection.set("items", player.getInventory().getContents()); //ItemStack[]
@@ -244,17 +244,8 @@ public final class UsefulUtil
         player.closeInventory();
 
         ConfigurationSection snapshotSection = getPlayerSnapshotSection(player);
-        if (!snapshotSection.isSet("items"))
+        if (snapshotSection.getList("items") == null)
             return false;
-
-        if (player.getInventory() == null)
-        {
-            log("Player's inventory is null!");
-        }
-        if (snapshotSection.getList("items").toArray(new ItemStack[player.getInventory().getContents().length]) == null)
-        {
-            log("section#getlist#toarray is null?! " + String.valueOf(player.getInventory().getContents().length));
-        }
 
         player.getInventory().setContents(snapshotSection.getList("items").toArray(new ItemStack[player.getInventory().getContents().length]));
         player.getInventory().setArmorContents(snapshotSection.getList("armor").toArray(new ItemStack[player.getInventory().getArmorContents().length]));
@@ -263,7 +254,7 @@ public final class UsefulUtil
         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(snapshotSection.getDouble("maxHealth"));
         player.setFoodLevel(snapshotSection.getInt("foodLevel"));
 
-        if (snapshotSection.isSet("additionalExp"))
+        if (snapshotSection.getInt("additionalExp") != 0)
         {
             Bukkit.getPluginManager().callEvent(new PlayerExpChangeEvent(player, snapshotSection.getInt("additionalExp")));
         }
