@@ -1,6 +1,7 @@
 package me.robomwm.usefulutil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Creature;
@@ -15,6 +16,7 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
@@ -37,6 +39,7 @@ public final class UsefulUtil
     {
         if (inventorySnapshots == null)
         {
+            inventorySnapshotsFile.mkdirs();
             if (!inventorySnapshotsFile.exists())
             {
                 try
@@ -189,7 +192,7 @@ public final class UsefulUtil
 
         return damager;
     }
-    
+
     private static ConfigurationSection getPlayerSnapshotSection(Player player)
     {
         loadInventorySnapshots();
@@ -217,11 +220,12 @@ public final class UsefulUtil
         if (snapshotSection.contains("items"))
             return false;
 
-        ItemStack[] items = player.getInventory().getContents();
-        ItemStack[] armor = player.getInventory().getArmorContents();
-
-        snapshotSection.set("items", items);
-        snapshotSection.set("armor", armor);
+        snapshotSection.set("items", player.getInventory().getContents()); //ItemStack[]
+        snapshotSection.set("armor", player.getInventory().getArmorContents()); //ItemStack[]
+        snapshotSection.set("exp", player.getTotalExperience() + 1); //int //For our purposes, totalExperience is ok since experience can't be spent. We add 1 since exp can be more precise than an int...
+        snapshotSection.set("health", player.getHealth()); //double
+        snapshotSection.set("maxHealth", player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()); //double
+        snapshotSection.set("foodLevel", player.getFoodLevel()); //int
 
         saveInventorySnapshots(); //TODO: schedule in a runnable instead (performance)? (Would need plugin instance)
 
@@ -238,11 +242,17 @@ public final class UsefulUtil
         if (!snapshotSection.contains("items"))
             return false;
 
-        ItemStack[] items = snapshotSection.getList("items").toArray(new ItemStack[0]);
-        ItemStack[] armor = snapshotSection.getList("armor").toArray(new ItemStack[0]);
+        player.getInventory().setContents(snapshotSection.getList("items").toArray(new ItemStack[0]));
+        player.getInventory().setArmorContents(snapshotSection.getList("armor").toArray(new ItemStack[0]));
+        SetExpFix.setTotalExperience(player, snapshotSection.getInt("exp"));
+        player.setHealth(snapshotSection.getDouble("health"));
+        player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(snapshotSection.getDouble("maxHealth"));
+        player.setFoodLevel(snapshotSection.getInt("foodLevel"));
 
-        snapshotSection.set("items", items);
-        snapshotSection.set("armor", armor);
+        if (snapshotSection.contains("additionalExp"))
+        {
+            Bukkit.getPluginManager().callEvent(new PlayerExpChangeEvent(player, snapshotSection.getInt("additionalExp")));
+        }
 
         deletePlayerSnapshotSection(player);
 
