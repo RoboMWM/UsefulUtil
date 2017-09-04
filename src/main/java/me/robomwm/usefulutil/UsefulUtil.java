@@ -32,47 +32,9 @@ public final class UsefulUtil
 {
     private UsefulUtil(){}
 
-    private static YamlConfiguration inventorySnapshots;
-    private static File inventorySnapshotsFile = new File(Bukkit.getWorldContainer().getPath() + File.separator + "plugins" + File.separator + "UsefulUtilData", "inventorySnapshots.data");
-
     private static void log(String error)
     {
         Bukkit.getLogger().severe("[" + UsefulUtil.class.getPackage().getName() + "] " + error);
-    }
-
-    private static void loadInventorySnapshots()
-    {
-        if (inventorySnapshots == null)
-        {
-            inventorySnapshotsFile.getParentFile().mkdirs();
-            if (!inventorySnapshotsFile.exists())
-            {
-                try
-                {
-                    inventorySnapshotsFile.createNewFile();
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                    return;
-                }
-            }
-            inventorySnapshots = YamlConfiguration.loadConfiguration(inventorySnapshotsFile);
-        }
-    }
-
-    private static void saveInventorySnapshots()
-    {
-        if (inventorySnapshots == null)
-            return;
-        try
-        {
-            inventorySnapshots.save(inventorySnapshotsFile);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -196,72 +158,6 @@ public final class UsefulUtil
         //TODO: track kills due to fire and other related environmental damage(?)
 
         return damager;
-    }
-
-    private static ConfigurationSection getPlayerSnapshotSection(Player player)
-    {
-        loadInventorySnapshots();
-        if (inventorySnapshots.getConfigurationSection(player.getUniqueId().toString()) == null)
-            return inventorySnapshots.createSection(player.getUniqueId().toString());
-        return inventorySnapshots.getConfigurationSection(player.getUniqueId().toString());
-    }
-
-    private static boolean deletePlayerSnapshotSection(Player player)
-    {
-        if (inventorySnapshots.get(player.getUniqueId().toString()) != null)
-        {
-            inventorySnapshots.set(player.getUniqueId().toString(), null);
-            saveInventorySnapshots();
-            return true;
-        }
-        return false;
-    }
-
-    public static boolean storeAndClearInventory(Player player)
-    {
-        player.closeInventory();
-
-        ConfigurationSection snapshotSection = getPlayerSnapshotSection(player);
-        if (snapshotSection.getList("items") != null)
-            return false;
-
-        snapshotSection.set("items", player.getInventory().getContents()); //ItemStack[]
-        snapshotSection.set("armor", player.getInventory().getArmorContents()); //ItemStack[]
-        snapshotSection.set("exp", player.getTotalExperience() + 1); //int //For our purposes, totalExperience is ok since experience can't be spent. We add 1 since exp can be more precise than an int...
-        snapshotSection.set("health", player.getHealth()); //double
-        snapshotSection.set("maxHealth", player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()); //double
-        snapshotSection.set("foodLevel", player.getFoodLevel()); //int
-
-        saveInventorySnapshots(); //TODO: schedule in a runnable instead (performance)? (Would need plugin instance)
-
-        player.getInventory().clear();
-
-        return true;
-    }
-
-    public static boolean restoreInventory(Player player)
-    {
-        player.closeInventory();
-
-        ConfigurationSection snapshotSection = getPlayerSnapshotSection(player);
-        if (snapshotSection.getList("items") == null)
-            return false;
-
-        player.getInventory().setContents(snapshotSection.getList("items").toArray(new ItemStack[player.getInventory().getContents().length]));
-        player.getInventory().setArmorContents(snapshotSection.getList("armor").toArray(new ItemStack[player.getInventory().getArmorContents().length]));
-        SetExpFix.setTotalExperience(player, snapshotSection.getInt("exp"));
-        player.setHealth(snapshotSection.getDouble("health"));
-        player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(snapshotSection.getDouble("maxHealth"));
-        player.setFoodLevel(snapshotSection.getInt("foodLevel"));
-
-        if (snapshotSection.getInt("additionalExp") != 0)
-        {
-            Bukkit.getPluginManager().callEvent(new PlayerExpChangeEvent(player, snapshotSection.getInt("additionalExp")));
-        }
-
-        deletePlayerSnapshotSection(player);
-
-        return true;
     }
 
     public static String formatTime()
