@@ -33,7 +33,7 @@ public final class UsefulUtil
     private UsefulUtil(){}
 
     private static YamlConfiguration inventorySnapshots;
-    private static File inventorySnapshotsFile = new File(Bukkit.getWorldContainer().getPath() + File.pathSeparator + "plugins" + File.pathSeparator + "UsefulUtilData", "inventorySnapshots.data");
+    private static File inventorySnapshotsFile = new File(Bukkit.getWorldContainer().getPath() + File.separator + "plugins" + File.separator + "UsefulUtilData", "inventorySnapshots.data");
 
     private static void loadInventorySnapshots()
     {
