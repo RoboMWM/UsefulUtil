@@ -35,6 +35,11 @@ public final class UsefulUtil
     private static YamlConfiguration inventorySnapshots;
     private static File inventorySnapshotsFile = new File(Bukkit.getWorldContainer().getPath() + File.separator + "plugins" + File.separator + "UsefulUtilData", "inventorySnapshots.data");
 
+    private static void log(String error)
+    {
+        Bukkit.getLogger().severe("[" + UsefulUtil.class.getPackage().getName() + "] " + error);
+    }
+
     private static void loadInventorySnapshots()
     {
         if (inventorySnapshots == null)
@@ -241,6 +246,15 @@ public final class UsefulUtil
         ConfigurationSection snapshotSection = getPlayerSnapshotSection(player);
         if (!snapshotSection.contains("items"))
             return false;
+
+        if (player.getInventory() == null)
+        {
+            log("Player's inventory is null!");
+        }
+        if (snapshotSection.getList("items").toArray(new ItemStack[player.getInventory().getContents().length]) == null)
+        {
+            log("section#getlist#toarray is null?! " + String.valueOf(player.getInventory().getContents().length));
+        }
 
         player.getInventory().setContents(snapshotSection.getList("items").toArray(new ItemStack[player.getInventory().getContents().length]));
         player.getInventory().setArmorContents(snapshotSection.getList("armor").toArray(new ItemStack[player.getInventory().getArmorContents().length]));
