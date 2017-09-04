@@ -39,7 +39,7 @@ public final class UsefulUtil
     {
         if (inventorySnapshots == null)
         {
-            inventorySnapshotsFile.mkdirs();
+            inventorySnapshotsFile.getParentFile().mkdirs();
             if (!inventorySnapshotsFile.exists())
             {
                 try
