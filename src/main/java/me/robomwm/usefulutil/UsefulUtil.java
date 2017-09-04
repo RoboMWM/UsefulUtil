@@ -242,8 +242,8 @@ public final class UsefulUtil
         if (!snapshotSection.contains("items"))
             return false;
 
-        player.getInventory().setContents(snapshotSection.getList("items").toArray(new ItemStack[0]));
-        player.getInventory().setArmorContents(snapshotSection.getList("armor").toArray(new ItemStack[0]));
+        player.getInventory().setContents(snapshotSection.getList("items").toArray(new ItemStack[player.getInventory().getContents().length]));
+        player.getInventory().setArmorContents(snapshotSection.getList("armor").toArray(new ItemStack[player.getInventory().getArmorContents().length]));
         SetExpFix.setTotalExperience(player, snapshotSection.getInt("exp"));
         player.setHealth(snapshotSection.getDouble("health"));
         player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(snapshotSection.getDouble("maxHealth"));
