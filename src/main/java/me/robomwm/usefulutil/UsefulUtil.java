@@ -18,6 +18,8 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
@@ -205,7 +207,7 @@ public final class UsefulUtil
             }
             return res;
         }
-        Long count = (long) Math.ceil(seconds / 86400); //Because 5 day teleport delay is needed. Jesus
+        Long count = (long) Math.ceil(seconds / 86400); //Because 5 day teleport delay is needed.
         String res;
         if (count > 1) {
             res = count + " days";
@@ -220,5 +222,52 @@ public final class UsefulUtil
 
     public static long getEpoch() {
         return System.currentTimeMillis() / 1000;
+    }
+
+    public static YamlConfiguration loadOrCreateYamlFile(JavaPlugin plugin, String fileName)
+    {
+        File storageFile = new File(plugin.getDataFolder(), fileName);
+        if (!storageFile.exists())
+        {
+            try
+            {
+                storageFile.createNewFile();
+            }
+            catch (IOException e)
+            {
+                plugin.getLogger().severe("Could not create " + fileName);
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return YamlConfiguration.loadConfiguration(storageFile);
+    }
+
+    public static boolean saveYamlFile(JavaPlugin plugin, String fileName, YamlConfiguration yaml)
+    {
+        File storageFile = new File(plugin.getDataFolder(), fileName);
+        try
+        {
+            yaml.save(storageFile);
+        }
+        catch (Exception e)
+        {
+            plugin.getLogger().severe("Could not save " + fileName);
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public static void saveYamlFileDelayed(JavaPlugin plugin, String fileName, YamlConfiguration yaml)
+    {
+        new BukkitRunnable()
+        {
+            @Override
+            public void run()
+            {
+                saveYamlFile(plugin, fileName, yaml);
+            }
+        }.runTask(plugin);
     }
 }
