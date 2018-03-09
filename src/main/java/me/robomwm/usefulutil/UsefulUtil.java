@@ -227,27 +227,20 @@ public final class UsefulUtil
     public static YamlConfiguration loadOrCreateYamlFile(JavaPlugin plugin, String fileName)
     {
         File storageFile = new File(plugin.getDataFolder(), fileName);
-        if (!storageFile.exists())
-        {
-            try
-            {
-                storageFile.createNewFile();
-            }
-            catch (IOException e)
-            {
-                plugin.getLogger().severe("Could not create " + fileName);
-                e.printStackTrace();
-                return null;
-            }
-        }
         return YamlConfiguration.loadConfiguration(storageFile);
     }
 
     public static boolean saveYamlFile(JavaPlugin plugin, String fileName, YamlConfiguration yaml)
     {
         File storageFile = new File(plugin.getDataFolder(), fileName);
+        if (yaml.getKeys(false).isEmpty())
+        {
+            storageFile.delete();
+            return true;
+        }
         try
         {
+            storageFile.createNewFile();
             yaml.save(storageFile);
         }
         catch (Exception e)
