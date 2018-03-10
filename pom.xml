@@ -6,7 +6,7 @@
 
     <groupId>me.robomwm</groupId>
     <artifactId>usefulutil</artifactId>
-    <version>1.24</version>
+    <version>1.25</version>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>

@@ -240,12 +240,13 @@ public final class UsefulUtil
         }
         try
         {
+            storageFile.getParentFile().mkdirs();
             storageFile.createNewFile();
             yaml.save(storageFile);
         }
         catch (Exception e)
         {
-            plugin.getLogger().severe("Could not save " + fileName);
+            plugin.getLogger().severe("Could not save " + storageFile.toString());
             e.printStackTrace();
             return false;
         }
