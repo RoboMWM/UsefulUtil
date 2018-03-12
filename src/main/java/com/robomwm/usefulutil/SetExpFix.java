@@ -1,4 +1,4 @@
-package me.robomwm.usefulutil;
+package com.robomwm.usefulutil;
 
 /*
  * From https://github.com/drtshock/Essentials/blob/2.x/Essentials/src/com/earth2me/essentials/craftbukkit/SetExpFix.java

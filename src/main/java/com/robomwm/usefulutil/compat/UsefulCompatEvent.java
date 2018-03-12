@@ -1,4 +1,4 @@
-package me.robomwm.usefulutil.compat;
+package com.robomwm.usefulutil.compat;
 
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;

@@ -1,4 +1,4 @@
-package me.robomwm.usefulutil.compat;
+package com.robomwm.usefulutil.compat;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
