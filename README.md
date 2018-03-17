@@ -19,7 +19,7 @@
                         </artifactSet>
                         <relocations>
                             <relocation>
-                                <pattern>me.robomwm.usefulutil</pattern>
+                                <pattern>com.robomwm.usefulutil</pattern>
                                 <shadedPattern>YOUR.OWN.PACKAGE</shadedPattern>
                             </relocation>
                         </relocations>
