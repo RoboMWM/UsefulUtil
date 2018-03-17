@@ -1,6 +1,7 @@
 package com.robomwm.usefulutil;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
@@ -17,6 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Created on 2/22/2017.
@@ -215,6 +217,20 @@ public final class UsefulUtil
 
     public static long getEpoch() {
         return System.currentTimeMillis() / 1000;
+    }
+
+    //TODO: attempt backup if not found?
+    public static YamlConfiguration loadOrCreateYamlFile(JavaPlugin plugin, String fileName, char pathSeparator)
+    {
+        YamlConfiguration yamlConfiguration = new YamlConfiguration();
+        yamlConfiguration.options().pathSeparator(pathSeparator);
+        File storageFile = new File(plugin.getDataFolder(), fileName);
+        try
+        {
+            yamlConfiguration.load(storageFile);
+        }
+        catch (InvalidConfigurationException | IOException ignored) {}
+        return yamlConfiguration;
     }
 
     public static YamlConfiguration loadOrCreateYamlFile(JavaPlugin plugin, String fileName)
