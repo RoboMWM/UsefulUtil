@@ -8,17 +8,21 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created on 2/22/2017.
@@ -260,6 +264,80 @@ public final class UsefulUtil
             return false;
         }
         return true;
+    }
+
+    /**
+     * Makes a player glow for a specified amount of time without affecting the glowing potioneffect.
+     * Uses metadata to avoid conflicting with other plugins.
+     * Priority can be specified to determine conflict resolution.
+     * @param player
+     * @param durationInTicks
+     */
+    public boolean timedGlow(JavaPlugin plugin, Player player, long durationInTicks, int priority)
+    {
+        final String key = "GLOWING";
+        final boolean overrideOtherPlugins = false;
+        player.removeMetadata(key, plugin);
+
+        //Check if another plugin has "overriden"
+        if (!overrideOtherPlugins && player.hasMetadata(key))
+        {
+            boolean isSetElsewhere = false;
+            for (MetadataValue value : player.getMetadata(key))
+            {
+                if (value.getOwningPlugin() != plugin)
+                {
+                    isSetElsewhere = true;
+                    break;
+                }
+            }
+
+            //If so, abort
+            if (isSetElsewhere)
+                return;
+        }
+
+        final long timeId = System.currentTimeMillis();
+
+        player.setMetadata(key, new FixedMetadataValue(plugin, timeId));
+        player.setGlowing(true);
+
+        new BukkitRunnable()
+        {
+            @Override
+            public void run()
+            {
+                List<MetadataValue> metadata = player.getMetadata(key);
+                if (metadata == null)
+                    return;
+
+                //Check if another plugin has "overriden"
+                if (!overrideOtherPlugins && metadata.size() > 1)
+                {
+                    boolean isSetElsewhere = false;
+                    for (MetadataValue value : player.getMetadata(key))
+                    {
+                        if (value.getOwningPlugin() != plugin)
+                        {
+                            isSetElsewhere = true;
+                            break;
+                        }
+                    }
+                    //If so, remove our metadata if we have set any and abort
+                    if (isSetElsewhere)
+                    {
+                        player.removeMetadata(key, plugin);
+                        return;
+                    }
+                }
+
+                if (player.getMetadata("GLOWING").get(0).asLong() != timeId)
+                    return;
+
+                player.setGlowing(false);
+                player.removeMetadata("GLOWING", plugin);
+            }
+        }.runTaskLater(plugin, durationInTicks);
     }
 
     public static void saveYamlFileDelayed(JavaPlugin plugin, String fileName, YamlConfiguration yaml)
