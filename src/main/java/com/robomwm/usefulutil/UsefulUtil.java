@@ -14,11 +14,17 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 
 /**
  * Created on 2/22/2017.
@@ -31,13 +37,15 @@ public final class UsefulUtil
 
     private static void log(String error)
     {
-        Bukkit.getLogger().severe("[" + UsefulUtil.class.getPackage().getName() + "] " + error);
+        Bukkit.getLogger().warning("[" + UsefulUtil.class.getPackage().getName() + "] " + error);
     }
 
     /**
-     * Returns whether the entity is a hostile/potentially hostile mob
-     * Does not include monsters of the Flying class (notably ghast, enderdragon, etc.)
-     * Flying extends LivingEntity. LivingEntity does not have getTarget(). Creatures do.
+     * Returns whether the entity is a hostile/potentially hostile mob that extends Creature.
+     *
+     * Mobs that extend Flying extend LivingEntity, which <i>does not have getTarget().</i> Creatures do have getTarget().
+     * As such, monsters of the Flying class (notably ghast, enderdragon, etc.), are not included in this check.
+     *
      * @param entity
      * @return
      */
@@ -159,13 +167,22 @@ public final class UsefulUtil
 
     public static String formatTime()
     {
-        return formatTime(getEpoch());
+        return formatTime(getCurrentSeconds());
     }
 
     public static String formatTime(Long seconds) {
         return formatTime(seconds, 1);
     }
 
+    /**
+     * Converts seconds into days, hours, minutes, seconds format
+     *
+     * @param seconds
+     * @param depth Sets maximum levels of precision should be displayed.
+     *              i.e. formatTime(3662, 1) will return 1 hour, 1 minute
+     *              whereas formatTime(3662, 1) will return 1 hour, 1 minute, 2 seconds
+     * @return
+     */
     public static String formatTime(Long seconds, int depth) {
         if (seconds == null || seconds < 5) {
             return "moments";
@@ -215,12 +232,24 @@ public final class UsefulUtil
         return res;
     }
 
-    public static long getEpoch() {
+    public static long getCurrentSeconds() {
         return System.currentTimeMillis() / 1000;
     }
 
-    //TODO: attempt backup if not found?
-    public static YamlConfiguration loadOrCreateYamlFile(JavaPlugin plugin, String fileName, char pathSeparator)
+    @Deprecated
+    public static long getEpoch()
+    {
+        return getCurrentSeconds();
+    }
+
+    /**
+     * Loads a yaml file with the specified pathSeparator
+     * @param plugin
+     * @param fileName
+     * @param pathSeparator
+     * @return
+     */
+    public static YamlConfiguration loadOrCreateYamlFile(Plugin plugin, String fileName, char pathSeparator)
     {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         yamlConfiguration.options().pathSeparator(pathSeparator);
@@ -233,44 +262,98 @@ public final class UsefulUtil
         return yamlConfiguration;
     }
 
-    public static YamlConfiguration loadOrCreateYamlFile(JavaPlugin plugin, String fileName)
+    /**
+     * Lazy way to get a yamlconfiguration without making a file object
+     * @param plugin
+     * @param fileName
+     * @return
+     */
+    public static YamlConfiguration loadOrCreateYamlFile(Plugin plugin, String fileName)
     {
         File storageFile = new File(plugin.getDataFolder(), fileName);
         return YamlConfiguration.loadConfiguration(storageFile);
     }
 
-    public static boolean saveYamlFile(JavaPlugin plugin, String fileName, YamlConfiguration yaml)
-    {
-        File storageFile = new File(plugin.getDataFolder(), fileName);
-        if (yaml.getKeys(false).isEmpty())
-        {
-            storageFile.delete();
-            return true;
-        }
-        try
-        {
-            storageFile.getParentFile().mkdirs();
-            storageFile.createNewFile();
-            yaml.save(storageFile);
-        }
-        catch (Exception e)
-        {
-            plugin.getLogger().severe("Could not save " + storageFile.toString());
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    public static void saveYamlFileDelayed(JavaPlugin plugin, String fileName, YamlConfiguration yaml)
+    /**
+     * TODO: return status via a future or something
+     * @param plugin
+     * @param fileName file name, relative to plugin's folder directory
+     * @param contents
+     */
+    public static void saveStringToFile(Plugin plugin, String fileName, String contents)
     {
         new BukkitRunnable()
         {
             @Override
             public void run()
             {
-                saveYamlFile(plugin, fileName, yaml);
+                File storageFile = new File(plugin.getDataFolder(), fileName);
+
+                //delete file if empty
+                if (contents == null || contents.isEmpty())
+                {
+                    storageFile.delete();
+                }
+
+                try
+                {
+                    storageFile.getParentFile().mkdirs();
+                    storageFile.createNewFile();
+                    Files.write(storageFile.toPath(), Collections.singletonList(contents), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+                }
+                catch (Exception e)
+                {
+                    plugin.getLogger().severe("Could not save " + storageFile.toString());
+                    e.printStackTrace();
+                }
             }
-        }.runTask(plugin);
+        }.runTaskAsynchronously(plugin);
+    }
+
+    /**
+     * @see UsefulUtil#saveStringToFile(Plugin, String, String)
+     * @param plugin
+     * @param fileName
+     * @param yaml
+     */
+    public static void saveYamlFile(Plugin plugin, String fileName, YamlConfiguration yaml)
+    {
+        saveStringToFile(plugin, fileName, yaml.saveToString());
+    }
+
+    /**
+     * Sets a source to a TNTPrimed entity
+     *
+     * TNTPrimed allows you to get the source, but there's no way to set one
+     * This method allows you to do that though.
+     *
+     * @param tnt TNTPrimed entity you wish to apply a source to
+     * @param source the LivingEntity to define as the source of this TNTPrimed entity
+     * @return the tnt object, for chaining or whatever
+     */
+    public static TNTPrimed tntSetSource(TNTPrimed tnt, LivingEntity source)
+    {
+        try
+        {
+            final Class<? extends TNTPrimed> tntClass = tnt.getClass();
+            Method getHandle = tntClass.getMethod("getHandle");
+            final Object nmsTNT = getHandle.invoke(tnt);
+            Field f = nmsTNT.getClass().getDeclaredField("source");
+            f.setAccessible(true);
+
+            final Class<? extends LivingEntity> sourceClass = source.getClass();
+            getHandle = sourceClass.getMethod("getHandle");
+            final Object nmsEntity = getHandle.invoke(source);
+
+            f.set(nmsTNT, nmsEntity);
+
+            return tnt;
+        }
+        catch (Exception e)
+        {
+            log("Unable to set source for TNT.");
+            e.printStackTrace();
+            return tnt;
+        }
     }
 }
