@@ -23,6 +23,8 @@
                                 <shadedPattern>YOUR.OWN.PACKAGE</shadedPattern>
                             </relocation>
                         </relocations>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <minimizeJar>true</minimizeJar>
                     </configuration>
                     <executions>
                         <execution>

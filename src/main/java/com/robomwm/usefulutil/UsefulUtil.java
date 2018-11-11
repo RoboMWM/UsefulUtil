@@ -298,6 +298,7 @@ public final class UsefulUtil
                 try
                 {
                     storageFile.getParentFile().mkdirs();
+                    storageFile.delete(); //always overwrite file
                     storageFile.createNewFile();
                     Files.write(storageFile.toPath(), Collections.singletonList(contents), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
                 }
