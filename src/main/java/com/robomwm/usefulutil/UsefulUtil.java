@@ -48,7 +48,10 @@ public final class UsefulUtil
      *
      * @param entity
      * @return
+     * @deprecated 1.13 added Mob class which is where getTarget has been moved to (every monster has tracking now)
+     * @see org.bukkit.entity.Mob
      */
+    @Deprecated
     public static boolean isMonsterWithTracking(Entity entity)
     {
         if (!(entity instanceof Creature)) return false;
@@ -83,9 +86,9 @@ public final class UsefulUtil
         {
             case GHAST: //extends Flying
             case ENDER_DRAGON: //extends ComplexLivingEntity
-            case MAGMA_CUBE:
-            case SHULKER:
-            case POLAR_BEAR:
+            case MAGMA_CUBE: //extends Slime
+            case SHULKER: //extends Golem
+            case POLAR_BEAR: //extends Animal - neutral until provoked (treating same classification as zombie pigmen)
                 return true;
             case RABBIT:
                 Rabbit rabbit = (Rabbit) entity;
@@ -263,32 +266,49 @@ public final class UsefulUtil
     }
 
     /**
-     * Lazy way to get a yamlconfiguration without making a file object
+     * Lazy way to get a yamlconfiguration without having to make a file object
      * @param plugin
      * @param fileName
      * @return
+     * @deprecated Literally can be a one-liner in your own plugin
+     *             YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "/file.yml");
      */
+    @Deprecated
     public static YamlConfiguration loadOrCreateYamlFile(Plugin plugin, String fileName)
     {
         File storageFile = new File(plugin.getDataFolder(), fileName);
         return YamlConfiguration.loadConfiguration(storageFile);
     }
 
+
+
     /**
-     * TODO: return status via a future or something
+     * @see UsefulUtil#saveStringToFile(Plugin, File, String)
      * @param plugin
      * @param fileName file name, relative to plugin's folder directory
      * @param contents
      */
     public static void saveStringToFile(Plugin plugin, String fileName, String contents)
     {
+        saveStringToFile(plugin, new File(plugin.getDataFolder(), fileName), contents);
+    }
+
+    /**
+     * Asynchronously save the specified string into a file
+     *
+     * TODO: return status via a future or something
+     *
+     * @param plugin
+     * @param storageFile File to store contents in
+     * @param contents
+     */
+    public static void saveStringToFile(Plugin plugin, File storageFile, String contents)
+    {
         new BukkitRunnable()
         {
             @Override
             public void run()
             {
-                File storageFile = new File(plugin.getDataFolder(), fileName);
-
                 //delete file if empty
                 if (contents == null || contents.isEmpty())
                 {
@@ -316,7 +336,9 @@ public final class UsefulUtil
      * @param plugin
      * @param fileName
      * @param yaml
+     * @deprecated use saveStringToFile(plugin, "filename.yml", yaml.saveToString());
      */
+    @Deprecated
     public static void saveYamlFile(Plugin plugin, String fileName, YamlConfiguration yaml)
     {
         saveStringToFile(plugin, fileName, yaml.saveToString());
