@@ -3,7 +3,6 @@ package com.robomwm.usefulutil;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -15,18 +14,11 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.util.Collections;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created on 2/22/2017.
@@ -43,38 +35,6 @@ public final class UsefulUtil
     }
 
     /**
-     * Returns whether the entity is a hostile/potentially hostile mob that extends Creature.
-     *
-     * Mobs that extend Flying extend LivingEntity, which <i>does not have getTarget().</i> Creatures do have getTarget().
-     * As such, monsters of the Flying class (notably ghast, enderdragon, etc.), are not included in this check.
-     *
-     * @param entity
-     * @return
-     * @deprecated 1.13 added Mob class which is where getTarget has been moved to (every monster has tracking now)
-     * @see org.bukkit.entity.Mob
-     */
-    @Deprecated
-    public static boolean isMonsterWithTracking(Entity entity)
-    {
-        if (!(entity instanceof Creature)) return false;
-        if (entity instanceof Monster) return true;
-
-
-        EntityType type = entity.getType();
-        switch(type)
-        {
-            case MAGMA_CUBE:
-            case SHULKER:
-            case POLAR_BEAR:
-                return true;
-            case RABBIT:
-                Rabbit rabbit = (Rabbit) entity;
-                if (rabbit.getRabbitType() == Rabbit.Type.THE_KILLER_BUNNY) return true;
-            default:
-                return false;
-        }
-    }
-    /**
      * Returns whether the entity is a hostile/potentially hostile mob
      * @param entity
      * @return
@@ -82,7 +42,6 @@ public final class UsefulUtil
     public static boolean isMonster(Entity entity)
     {
         if (entity instanceof Monster) return true;
-
         EntityType type = entity.getType();
         switch(type)
         {
@@ -241,12 +200,6 @@ public final class UsefulUtil
         return System.currentTimeMillis() / 1000;
     }
 
-    @Deprecated
-    public static long getEpoch()
-    {
-        return getCurrentSeconds();
-    }
-
     /**
      * Loads a yaml file with the specified pathSeparator
      * @param plugin
@@ -265,21 +218,6 @@ public final class UsefulUtil
         }
         catch (InvalidConfigurationException | IOException ignored) {}
         return yamlConfiguration;
-    }
-
-    /**
-     * Lazy way to get a yamlconfiguration without having to make a file object
-     * @param plugin
-     * @param fileName
-     * @return
-     * @deprecated Literally can be a one-liner in your own plugin
-     *             YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "/file.yml");
-     */
-    @Deprecated
-    public static YamlConfiguration loadOrCreateYamlFile(Plugin plugin, String fileName)
-    {
-        File storageFile = new File(plugin.getDataFolder(), fileName);
-        return YamlConfiguration.loadConfiguration(storageFile);
     }
 
     /**
