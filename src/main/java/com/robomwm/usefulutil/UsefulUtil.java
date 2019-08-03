@@ -25,6 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created on 2/22/2017.
@@ -183,7 +185,7 @@ public final class UsefulUtil
      * @param seconds
      * @param depth Sets maximum levels of precision should be displayed.
      *              i.e. formatTime(3662, 1) will return 1 hour, 1 minute
-     *              whereas formatTime(3662, 1) will return 1 hour, 1 minute, 2 seconds
+     *              whereas formatTime(3662, 2) will return 1 hour, 1 minute, 2 seconds
      * @return
      */
     public static String formatTime(Long seconds, int depth) {
@@ -278,70 +280,6 @@ public final class UsefulUtil
     {
         File storageFile = new File(plugin.getDataFolder(), fileName);
         return YamlConfiguration.loadConfiguration(storageFile);
-    }
-
-
-
-    /**
-     * @see UsefulUtil#saveStringToFile(Plugin, File, String)
-     * @param plugin
-     * @param fileName file name, relative to plugin's folder directory
-     * @param contents
-     */
-    public static void saveStringToFile(Plugin plugin, String fileName, String contents)
-    {
-        saveStringToFile(plugin, new File(plugin.getDataFolder(), fileName), contents);
-    }
-
-    /**
-     * Asynchronously save the specified string into a file
-     *
-     * TODO: return status via a future or something
-     *
-     * @param plugin
-     * @param storageFile File to store contents in
-     * @param contents
-     */
-    public static void saveStringToFile(Plugin plugin, File storageFile, String contents)
-    {
-        new BukkitRunnable()
-        {
-            @Override
-            public void run()
-            {
-                //delete file if empty
-                if (contents == null || contents.isEmpty())
-                {
-                    storageFile.delete();
-                }
-
-                try
-                {
-                    storageFile.getParentFile().mkdirs();
-                    storageFile.delete(); //always overwrite file
-                    storageFile.createNewFile();
-                    Files.write(storageFile.toPath(), Collections.singletonList(contents), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
-                }
-                catch (Exception e)
-                {
-                    plugin.getLogger().severe("Could not save " + storageFile.toString());
-                    e.printStackTrace();
-                }
-            }
-        }.runTaskAsynchronously(plugin);
-    }
-
-    /**
-     * @see UsefulUtil#saveStringToFile(Plugin, String, String)
-     * @param plugin
-     * @param fileName
-     * @param yaml
-     * @deprecated use saveStringToFile(plugin, "filename.yml", yaml.saveToString());
-     */
-    @Deprecated
-    public static void saveYamlFile(Plugin plugin, String fileName, YamlConfiguration yaml)
-    {
-        saveStringToFile(plugin, fileName, yaml.saveToString());
     }
 
     /**
