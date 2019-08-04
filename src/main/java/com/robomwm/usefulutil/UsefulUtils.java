@@ -25,13 +25,13 @@ import java.lang.reflect.Method;
  *
  * @author RoboMWM
  */
-public final class UsefulUtil
+public final class UsefulUtils
 {
-    private UsefulUtil(){}
+    private UsefulUtils(){}
 
     private static void log(String error)
     {
-        Bukkit.getLogger().warning("[" + UsefulUtil.class.getPackage().getName() + "] " + error);
+        Bukkit.getLogger().warning("[" + UsefulUtils.class.getPackage().getName() + "] " + error);
     }
 
     /**
