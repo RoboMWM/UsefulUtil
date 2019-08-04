@@ -1,4 +1,4 @@
-1. Add as dependency: https://jitpack.io/#RoboMWM/UsefulUtil
+1. Add as dependency: https://jitpack.io/#RoboMWM/UsefulUtils
 
 2. Add the shading plugin to the build. Replace **`YOUR.OWN.PACKAGE`** with your own package.
     
