@@ -1,4 +1,4 @@
-package com.robomwm.usefulutil;
+package com.robomwm.usefulutils;
 
 import org.bukkit.plugin.Plugin;
 
