@@ -8,8 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created on 8/3/2019.
@@ -18,7 +18,7 @@ import java.util.concurrent.SynchronousQueue;
  */
 public final class FileUtils
 {
-    private static BlockingQueue<Integer> saveQueue = new SynchronousQueue<>();
+    private static Lock saveLock = new ReentrantLock();
 
     /**
      * Asynchronsly save the specified string into a file within the plugin's data folder.
@@ -51,20 +51,13 @@ public final class FileUtils
             @Override
             public void run()
             {
-                try
-                {
-                    saveQueue.put(this.hashCode());
-                }
-                catch (InterruptedException e)
-                {
-                    plugin.getLogger().severe("Could not save " + storageFile.toString());
-                    e.printStackTrace();
-                }
-
+                saveLock.lock();
 
                 if (contents == null || contents.isEmpty())
                 {
                     storageFile.delete();
+                    saveLock.unlock();
+                    return;
                 }
 
                 try
@@ -78,6 +71,8 @@ public final class FileUtils
                     plugin.getLogger().severe("Could not save " + storageFile.toString());
                     e.printStackTrace();
                 }
+
+                saveLock.unlock();
             }
         }.runTaskAsynchronously(plugin);
     }
