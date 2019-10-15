@@ -6,7 +6,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -64,7 +63,7 @@ public final class FileUtils
                 {
                     storageFile.getParentFile().mkdirs();
                     storageFile.createNewFile();
-                    Files.write(storageFile.toPath(), Collections.singletonList(contents), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+                    Files.write(storageFile.toPath(), Collections.singletonList(contents), StandardCharsets.UTF_8);
                 }
                 catch (Exception e)
                 {
